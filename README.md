@@ -47,6 +47,20 @@ flowchart TD
     I --> J[Download Forecast CSV]
 ```
 
+## 📸 Application Screenshots
+
+### Dashboard Overview
+![SmartStock AI Dashboard](screenshots/dashboard.png)
+
+### Demand Forecast
+![SmartStock AI Forecast](screenshots/forecast1.png)
+
+### Inventory Recommendation
+![Inventory Recommendation](screenshots/forecast2.png)
+
+### Additional Dashboard View
+![SmartStock AI Dashboard View](screenshots/forecast3.png)
+
 ## 🚀 Run Locally
 
 1. Clone this repository:
