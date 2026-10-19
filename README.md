@@ -1,43 +1,128 @@
+# 📦 SmartStock AI — Demand Forecasting & Inventory Optimization
 
-# SmartStock AI 📦
+SmartStock AI is a machine learning project that forecasts product demand using historical sales data and provides inventory replenishment recommendations through an interactive Streamlit dashboard.
 
-**SmartStock AI** is a machine learning-based sales forecasting and inventory recommendation application.
+## 🎯 Project Objectives
 
-## Problem Statement
-Small retailers can struggle to predict product demand, resulting in excess inventory or stock shortages.
+- Analyze historical retail sales trends.
+- Forecast demand for the next seven days.
+- Evaluate predictions using Mean Absolute Error (MAE).
+- Estimate reorder points using predicted demand, supplier lead time, and safety stock.
+- Visualize insights through an interactive dashboard.
+- Export demand forecasts as CSV files.
 
-## Objectives
-- Analyze historical sales data.
-- Forecast product demand for the next 7 days.
-- Evaluate predictions using appropriate regression metrics.
-- Provide simple inventory reorder recommendations.
-- Display results through an interactive Streamlit dashboard.
+## 🛠️ Technology Stack
 
-## Technology Stack
-- Python
-- Pandas and NumPy
-- Scikit-learn
-- Plotly
-- Streamlit
+- **Language:** Python
+- **Data Analysis:** Pandas, NumPy
+- **Machine Learning:** Scikit-learn, Random Forest Regressor
+- **Visualization:** Plotly
+- **Web Application:** Streamlit
+- **Model Storage:** Joblib
 
-## Project Workflow
-The planned workflow is:
+## 📊 Dataset
 
-1. Upload and validate sales data.
-2. Analyze historical sales patterns.
-3. Engineer features for machine learning.
-4. Train and evaluate a forecasting model.
-5. Generate demand forecasts.
-6. Recommend inventory replenishment.
-7. Display results and allow CSV downloads.
+The project uses the Store Item Demand Forecasting Challenge dataset from Kaggle.
 
-*The final flowchart, evaluation results, setup instructions, and screenshots will be added as the project develops.*
+Dataset: https://www.kaggle.com/competitions/demand-forecasting-kernels-only/data
 
-## Project Status
-🚧 In development — four-day MVP plan.
+The dataset includes:
+- `date` — Date of the sales record
+- `store` — Store identifier
+- `item` — Product identifier
+- `sales` — Units sold
 
-## Dataset
-The project will use historical retail sales data from the Kaggle Store Item Demand Forecasting Challenge.
+## ⚙️ Project Workflow
 
-## Disclaimer
-Forecasts and inventory recommendations are estimates for demonstration purposes and should be validated before use in real business operations.
+```mermaid
+flowchart TD
+    A[Historical Sales Dataset] --> B[Data Cleaning]
+    B --> C[Exploratory Data Analysis]
+    C --> D[Create Lag and Calendar Features]
+    D --> E[Train Random Forest Model]
+    E --> F[Evaluate Using MAE]
+    F --> G[Forecast Next 7 Days]
+    G --> H[Inventory Reorder Recommendation]
+    H --> I[Streamlit Dashboard]
+    I --> J[Download Forecast CSV]
+```
+
+## 🚀 Run Locally
+
+1. Clone this repository:
+
+   ```bash
+   git clone https://github.com/Meemansha2005/smartstock-ai.git
+   cd smartstock-ai
+   ```
+
+2. Create and activate a virtual environment:
+
+   ```bash
+   python -m venv .venv
+   ```
+
+   Windows PowerShell:
+
+   ```powershell
+   .venv\Scripts\Activate.ps1
+   ```
+
+3. Install dependencies:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Download the dataset from Kaggle and place `train.csv` inside the `data` folder.
+
+5. Train the model:
+
+   ```bash
+   python train_model.py
+   ```
+
+6. Start the dashboard:
+
+   ```bash
+   streamlit run app.py
+   ```
+
+## 📈 Model Evaluation
+
+The Random Forest model is evaluated on a held-out chronological test period using Mean Absolute Error (MAE). Its performance is compared with a previous-day sales baseline.
+
+Lower MAE indicates smaller average absolute prediction errors. Actual evaluation values are generated when the training script runs.
+
+## 📦 Inventory Recommendation
+
+The application estimates:
+
+- **Lead-time demand:** Average forecast demand multiplied by supplier lead time.
+- **Reorder point:** Lead-time demand plus safety stock.
+- **Suggested order quantity:** The quantity needed to reach the estimated target stock level.
+
+These recommendations are estimates and depend on the accuracy of the forecast and the inventory inputs supplied by the user.
+
+## ⚠️ Limitations
+
+- Forecast accuracy depends on historical sales patterns.
+- Inventory recommendations use user-provided lead time and safety stock.
+- The dataset does not include actual inventory levels or supplier information.
+- This project is an academic prototype, not a production inventory management system.
+
+## 🔮 Future Improvements
+
+- Compare multiple forecasting algorithms.
+- Support user-uploaded sales datasets.
+- Incorporate holidays, promotions, and seasonal patterns.
+- Add more robust inventory optimization.
+- Deploy the application online.
+
+## 👩‍💻 Author
+
+**Meemansha Pandey**
+
+B.Tech Honours — Data Science
+
+GitHub: https://github.com/Meemansha2005
