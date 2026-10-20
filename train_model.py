@@ -1,25 +1,27 @@
 
 from pathlib import Path
 
-import pandas as pd
+import joblib
 import numpy as np
+import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error
-import joblib
 
 # Project paths
 DATA_PATH = Path("data/train.csv")
 MODEL_DIR = Path("models")
 MODEL_PATH = MODEL_DIR / "demand_model.joblib"
 
-# Load and prepare data
+
 def load_data():
+    """Load and validate the sales dataset."""
     if not DATA_PATH.exists():
         raise FileNotFoundError(
             "Dataset not found. Place train.csv inside the data folder."
         )
 
     df = pd.read_csv(DATA_PATH)
+
     required_columns = {"date", "store", "item", "sales"}
 
     if not required_columns.issubset(df.columns):
@@ -29,16 +31,25 @@ def load_data():
 
     df["date"] = pd.to_datetime(df["date"], errors="coerce")
     df["sales"] = pd.to_numeric(df["sales"], errors="coerce")
-    df = df.dropna(subset=["date", "store", "item", "sales"])
 
-    df = df.sort_values(["store", "item", "date"]).reset_index(drop=True)
+    df = df.dropna(subset=["date", "store", "item", "sales"])
+    df = df.sort_values(
+        ["store", "item", "date"]
+    ).reset_index(drop=True)
+
+    if df.empty:
+        raise ValueError("The dataset contains no valid sales records.")
+
     return df
 
 
-# Create historical sales features
 def create_features(df):
+    """Create lag and calendar features for demand forecasting."""
     data = df.copy()
-    grouped = data.groupby(["store", "item"], sort=False)["sales"]
+
+    grouped = data.groupby(
+        ["store", "item"], sort=False
+    )["sales"]
 
     data["lag_1"] = grouped.shift(1)
     data["lag_7"] = grouped.shift(7)
@@ -58,17 +69,30 @@ def main():
     df = load_data()
 
     print(f"Rows loaded: {len(df):,}")
-    print(f"Date range: {df['date'].min().date()} to "
-          f"{df['date'].max().date()}")
+    print(
+        f"Date range: {df['date'].min().date()} to "
+        f"{df['date'].max().date()}"
+    )
     print(f"Stores: {df['store'].nunique()}")
     print(f"Products: {df['item'].nunique()}")
 
     featured = create_features(df)
 
+    if featured.empty:
+        raise ValueError(
+            "Not enough historical data to create lag features."
+        )
+
     # Chronological split: final 30 calendar days are the test period
     cutoff = featured["date"].max() - pd.Timedelta(days=30)
+
     train = featured[featured["date"] <= cutoff].copy()
     test = featured[featured["date"] > cutoff].copy()
+
+    if train.empty or test.empty:
+        raise ValueError(
+            "Not enough date coverage to create a train/test split."
+        )
 
     feature_columns = [
         "store",
@@ -81,50 +105,60 @@ def main():
         "month",
     ]
 
-    if train.empty or test.empty:
-        raise ValueError("Not enough date coverage to create a train/test split.")
-
     X_train = train[feature_columns]
     y_train = train["sales"]
+
     X_test = test[feature_columns]
     y_test = test["sales"]
 
-    print("\nTraining Random Forest model...")
+    print("\nTraining smaller Random Forest model...")
+
     model = RandomForestRegressor(
-        n_estimators=100,
-        max_depth=15,
+        n_estimators=30,
+        max_depth=10,
         min_samples_leaf=2,
         random_state=42,
         n_jobs=-1,
     )
+
     model.fit(X_train, y_train)
 
+    # Evaluate on the held-out chronological test period
     predictions = np.maximum(0, model.predict(X_test))
     mae = mean_absolute_error(y_test, predictions)
 
-    # Simple baseline: use previous day's sales
+    # Baseline: predict using previous-day sales
     baseline_predictions = test["lag_1"].to_numpy()
-    baseline_mae = mean_absolute_error(y_test, baseline_predictions)
+    baseline_mae = mean_absolute_error(
+        y_test, baseline_predictions
+    )
 
     print("\n--- Model Evaluation ---")
     print(f"Random Forest MAE: {mae:.3f} units")
     print(f"Previous-day baseline MAE: {baseline_mae:.3f} units")
 
+    if mae < baseline_mae:
+        print("Result: Model outperforms the baseline on this test set.")
+    else:
+        print("Result: Model does not outperform the baseline on this test set.")
+
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Save model and its metadata
-    joblib.dump(
-        {
-            "model": model,
-            "feature_columns": feature_columns,
-            "mae": float(mae),
-            "baseline_mae": float(baseline_mae),
-            "last_date": df["date"].max(),
-        },
-        MODEL_PATH,
-    )
+    # Save the model and metadata expected by the application
+    artifact = {
+        "model": model,
+        "feature_columns": feature_columns,
+        "mae": float(mae),
+        "baseline_mae": float(baseline_mae),
+        "last_date": df["date"].max(),
+    }
+
+    joblib.dump(artifact, MODEL_PATH, compress=3)
+
+    file_size_mb = MODEL_PATH.stat().st_size / (1024 * 1024)
 
     print(f"\nModel saved to: {MODEL_PATH}")
+    print(f"Compressed model size: {file_size_mb:.2f} MB")
     print("Training complete!")
 
 
