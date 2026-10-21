@@ -1,7 +1,19 @@
 # 📦 SmartStock AI — Demand Forecasting & Inventory Optimization
 
 SmartStock AI is a machine learning project that forecasts product demand using historical sales data and provides inventory replenishment recommendations through an interactive Streamlit dashboard.
+## 🚀 Live Demo — Try SmartStock AI [https://smartstock-ai-6d6cdphozw9ysnhfamhfut.streamlit.app/](https://smartstock-ai-6d6cdphozw9ysnhfamhfut.streamlit.app/) 
 
+An ML-powered application that forecasts product demand and supports inventory planning using historical sales data.
+
+Key highlights
+
+Analyzed 913,000 sales records across 10 stores and 50 products.
+
+Built a Random Forest demand forecasting model.
+
+Achieved a 31.47% lower MAE than the previous-day baseline.
+
+Developed an interactive Streamlit dashboard with forecasts, inventory recommendations, and CSV export.
 ## 🎯 Project Objectives
 
 - Analyze historical retail sales trends.
